@@ -1,0 +1,61 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="{% static 'styles.css' %}">
+    <title>Cough Detection Demo</title>
+</head>
+
+<body>
+	<div id="window">
+		<div id="top-bar">
+			<img id="logo" src="{% static 'Logo.png' %}" alt="Konect" width=25% height=45%>			
+		</div>
+		
+		<div id="main-section">
+			<h2>CoSpect: Offering First-level Respiratory Health Screening</h2>
+
+			<br>
+			<br>
+
+			<div id="directions">
+				<b>Directions</b>
+				<l>
+					<li>Click "Begin Diagnosis".</li>
+					<li>Upload a file of the coughing patient.</li>
+					<li>Stand by to receive custom a custom analyis of your respiratory health.</li>
+				</l>
+			</div>
+
+			
+			<form method="post" enctype="multipart/form-data" name="upload-form" hidden="hidden">
+				{% csrf_token %}
+				<input type="file" name="upload" id="upload" class="btn" onchange="document.forms['upload-form'].submit(); location.href='{% url 'script' %}'" accept="audio/*">
+				<button type="submit" class="btn">Upload File</button>
+			</form>
+			<button id="diagnose" class="btn" onclick="document.getElementById('upload').click()">Begin Diagnosis</button>
+			
+			<div id="loading">
+				<br><div style="font-family:Arial;">Please wait while we process your audio file.</div><br>
+				<div id="loader"></div> 
+			</div>
+
+			<br>
+			<br>
+			<div id="diagnosis">
+				<p  style="font-family:Arial;">
+					<b>Diagnosis: No symptoms detected. You are at a low risk of having Coronavirus.</b>
+					<br><br>
+					Recommendation: Your condition is noncritical. If discomfort continues or new symptoms develop, contact your local doctor.
+				</p>
+			</div>
+			{% if data %}
+			{{data | safe}}
+			{%endif%}
+
+		</div>
+	</div>
+</body>
+
+</html>

@@ -1,0 +1,15 @@
+Goal of this project is to create a webapp that diagnoses COVID-19 symptoms.
+
+The technology is a deep learning model that processes an audio file of cough sound.
+The model analyzes sound to provide a prediction and recommendation for the patient to follow up with.
+
+Deep learning model has been trained on public data, and is being deployed using Tensorflow js.
+
+Advantages of our solution
+- Lightweight neural network that runs on the browser
+- Entire processing is client-side, so there are no privacy concerns
+- Easily accessible solution open to the public
+- Reduces demand on doctors and allows for focus on critical patients
+- Enables a cheaper and quicker method to current PCR-based testing
+- A scalable solution that allows the public to quickly get answers
+- Builds upon the work of many researchers in the field over the past decade

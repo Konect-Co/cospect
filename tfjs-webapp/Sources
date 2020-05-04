@@ -1,0 +1,10 @@
+Getting started with Node.js
+
+Tensorflow JS Setup - https://www.tensorflow.org/js/tutorials/setup
+
+Importing Keras model for Tensorflow JS - https://www.tensorflow.org/js/tutorials/conversion/import_keras
+How to save Keras model as .json - https://machinelearningmastery.com/save-load-keras-deep-learning-models/
+
+How to upload files - https://developer.mozilla.org/en-US/docs/Web/API/File/Using_files_from_web_applications
+
+node.js enabling CORS - https://expressjs.com/en/resources/middleware/cors.html

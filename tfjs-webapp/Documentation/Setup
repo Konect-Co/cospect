@@ -1,0 +1,8 @@
+npm run build
+	(browserify req.js -o build.js)
+npm run watch
+	(watchify req.js -o build.js)
+	Ctrl + Z --> run in background
+node app.js
+
+Go to browser to observe
