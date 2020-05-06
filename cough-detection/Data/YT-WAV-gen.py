@@ -1,3 +1,13 @@
+"""
+FOR RICHARD:
+
+- Replace Data Table in prev. directory with new directory
+- Remove train_vids and test_vids and instead read from Data_Table in parent directory
+- Modify script to store audio files appropriately with their row name in spreadsheet
+
+"""
+
+
 import os
 
 train_vids = {
