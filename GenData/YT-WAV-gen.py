@@ -2,6 +2,7 @@ import os
 from openpyxl import load_workbook
 import ast
 from pydub import AudioSegment
+import json
 
 base_path = "/home/ravit/Konect-Code/"
 sheet_path = base_path + "cospect/data.xlsx"
@@ -52,8 +53,16 @@ def gen_vids (path):
 		name = str(row_i)
 		yt_link = ws["H" + str(row_i)].value
 		section = ws["I" + str(row_i)].value
-		diagnosis = ws["D" + str(row_i)].value
 
+		gender = ws["B" + str(row_i)].value
+		age = ws["C" + str(row_i)].value
+		symptoms = ws["D" + str(row_i)].value.split("_")
+		disease = ws["G" + str(row_i)].value
+
+		cough_data = {"gender":gender, "age":age, "symptoms":symptoms, "disease":disease}
+		json_cough_data = json.dumps(cough_data)
+		with open(base_path + "cospect/Data/" + name + ".json", 'w') as file:
+			file.write(json_cough_data)
 		
 		gen_vid(name, yt_link, section, base_path + "cospect/Data/YT-Audio/")
 
