@@ -4,10 +4,10 @@ import ast
 from pydub import AudioSegment
 import json
 
-dirs = os.getcwd().split("/")[:-1]
+dirs = os.getcwd().split("/")[:-2]
 base_path = "/".join(dirs) + "/"
 
-sheet_path = base_path + "cospect/GenData/data.xlsx"
+sheet_path = base_path + "/cospect/GenData/data.xlsx"
 
 def splice_interval(input_path, output_path, interval_list):
 	sound = AudioSegment.from_wav(input_path)
@@ -48,8 +48,8 @@ def gen_vids (path):
 	wb = load_workbook(sheet_path)
 	ws = wb.active
 
-	start_row = 7
-	end_row = 10
+	start_row = 46
+	end_row = 311
 
 	for row_i in range(start_row, end_row+1):
 		name = str(row_i)
