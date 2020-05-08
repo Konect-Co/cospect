@@ -4,7 +4,7 @@ import ast
 from pydub import AudioSegment
 import json
 
-base_path = "/home/ravit/Konect-Code/"
+base_path = "/home/ubuntu/"
 sheet_path = base_path + "cospect/data.xlsx"
 
 def splice_interval(input_path, output_path, interval_list):
