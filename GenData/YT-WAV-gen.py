@@ -4,8 +4,10 @@ import ast
 from pydub import AudioSegment
 import json
 
-base_path = "/home/ubuntu/"
-sheet_path = base_path + "cospect/data.xlsx"
+dirs = os.getcwd().split("/")[:-1]
+base_path = "/".join(dirs) + "/"
+
+sheet_path = base_path + "cospect/GenData/data.xlsx"
 
 def splice_interval(input_path, output_path, interval_list):
 	sound = AudioSegment.from_wav(input_path)
