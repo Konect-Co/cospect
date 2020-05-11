@@ -1,81 +1,79 @@
-import os
-
-from openpyxl import load_workbook
+import librosa as lb
+import json
 import numpy as np
+import pandas as pd
+import os
 import librosa
+pd.DataFrame()
 
-#utility function to create spectrogram input from an audio file
-def make_spectrogram (audio_path, resample_freq):
-	# load the signals and resample them
-	signal, sample_rate = librosa.core.load(audio_path)
-	if signal.shape[0] == 2:
-		signal = np.mean(signal, axis=0)
+class MakeData:
+   def __init__(self,audio_path,json_path):
+       self.audio_path=audio_path
+       self.json_path=json_path
+   
+   def is_json(self,filename):
+       try:
+           x=str(filename)
+           y=x.split('.')[1]
+           if(y=='json'):
+               
+               return True
+       except IndexError as e:
+           print('FILE EXTENSION NOT IN '+'.json')
+           
+       
+       
+   def make_df(self,csv_name='audio.csv'):
+       
+       df=pd.DataFrame()
+       json_files=os.listdir(self.json_path)
+       audio_files=os.listdir(self.audio_path)
+       
+       
+       
+       df=pd.DataFrame(columns=['id','age','gender','symptoms','disease','audio','sampling rate','time'])
+       i=0
+       #getting names of  all the keys in json file
+       for j in json_files:
+           if(self.is_json(j)==True):
+               with open(os.path.join(self.json_path,j)) as f:
+                   
+                   dict1=json.load(f)
+                   id1=j.split('.')[0]
+                   age=dict1['age']
+                   gender=dict1['gender']
+                   symptoms=dict1['symptoms'][0]
+                   disease=dict1['disease']
+                   
+               
+                   df.loc[i,'id']=id1
+                   df.loc[i,'age']=age
+                   df.loc[i,'gender']=gender
+                   df.loc[i,'symptoms']=symptoms
+                   df.loc[i,'disease']=disease
+                   path=self.audio_path+'/'+j.split('.')[0]+'.wav'
+                   audio,sample=librosa.core.load(path=os.path.normpath(path))
+                   
+                   df.loc[i,'audio']=np.asarray(audio)
+                   df.loc[i,'sampling rate']=sample
+                   
+                   duration=librosa.get_duration(y=audio,sr=sample)
+                   df.loc[i,'time']=duration
+                   
+                   i=i+1
 
-	signal_resampled = librosa.core.resample(signal, sample_rate, resample_freq)
+       return df
+           
+               
+#%%
 
-	stft = librosa.core.stft(signal_resampled)
-	spectrogram = np.power(np.abs(stft), 0.5)
+sep = os.path.sep
+dirs=os.getcwd().split(sep)[:-2]
+base_path = sep.join(dirs)
+base_path = "/home/ravit/Konect-Code/cospect/"
 
-	# Steps for normalisation===============
-	#means = np.mean(spectrogram, 1, keepdims=True)
-	#stddevs = np.std(means, 1, keepdims=True)
-	#spectrogram = (spectrogram - means)/stddevs
-	spectrogram = 1/(1 + np.exp(-spectrogram))
-	#=======================================
-
-	# Steps for padding====================== (ignore for now)
-	#max_length = 1000
-	#spectrogram = np.pad(spectrogram, [[0,0],[spectrogram.shape[1], 0]])
-	#=======================================
-
-	#output dimension is now [frequencies of spectrogram, timesteps]
-	#switching it to [timesteps, frequencies of spectrogram]
-	spectrograms = np.swapaxes(spectrograms, 1, 2)
-	
-	return spectrogram
-
-def make_data():
-	"""
-	What needs to be done in this method:
-	- Create spectrogram and output data in np array form
-	- Random split 90:10 between training and testing data
-		- Note: 90:10 split is according to timesteps, not number of samples
-		- However, the last training sample should not be cut off before its timesteps are complete
-	"""
-
-	"""
-	Making spectrogram data
-	- Read all the .wav files in Data/YT-Audio Directory
-	- For files over duration stored in sample_max_len, first split them into sections of max value stored in sample_max_len
-	- For each audio section, generate the spectrogram accordingly
-	"""
-	spectrogram_data = np.asarray([])
-	#end shape: [# samples, timesteps, frequencies of spectrogram]
-
-	#Audio samples over 60 seconds will be split up in sections of max 60 seconds
-	sample_max_len = 60
-
-	"""
-	Making output data
-	- Read all the .json files in Data
-	- Each .json file corresponds to a video in Data/YT-Audio
-	- .json file has multiple fields
-	- For now only one of importance is "symptoms"
-	- "symptoms" may have "Wet" "Dry" or neither
-	- If dry cough present --> [1 0]. wet cough --> [0 1]. neither --> [0 0]
-	- First axis of symptom_data should match length of spectrogram_data (repeat diagnosis for large files that were split up)
-	"""
-	symptom_data = np.asarray([])
-	#end shape: [# samples, 2]
-
-	#decimal between 0 and 1 representing percentage of timesteps
-	#1 - training_split is the percentage allocated for testing data
-	training_split = 0.9
-
-	#shuffle order of samples in spectrogram_data and symptom data
-	#(of course indices should still match each other)
-
-	return (training_x, training_y), (testing_x, testing_y)
-
-if __name__ == "__main__":
-	make_data()
+audio_path = base_path + "Data" + sep + "YT-Audio"
+json_path= base_path + "Data"
+h = MakeData(audio_path, json_path)
+df=h.make_df()
+print(df.head())
