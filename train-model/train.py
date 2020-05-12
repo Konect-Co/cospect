@@ -110,6 +110,24 @@ def get_model():
 	
 	return model
     
+
+#%%
+    
+#TODO: This method is repeated in several locations, including "GenData/DataAugmentation"
+#   Consolidate into one Python util file
+#utility function to create spectrogram input from an audio file
+def make_spectrogram(file_path):
+	signal, sample_rate = librosa.core.load(file_path)
+	if signal.shape[0] == 2:
+		signal = np.mean(signal, axis=0)
+
+	resample_freq = 8000
+	signal_resampled = librosa.core.resample(signal, sample_rate, resample_freq)
+
+	stft = librosa.core.stft(signal_resampled)
+	spectrogram = np.power(np.abs(stft), 0.5)
+	
+	return spectrogram
 #%%
 from keras.optimizers import Adam    
 
@@ -125,8 +143,28 @@ def train (training_x, training_y, testing_x, testing_y):
 	model.fit(training_x, training_y, epochs=epochs, validation_data=(testing_x, testing_y))
 
 #%%
-#get defined values for training_x, training_y, testing_x, testing_y from pd dataframe
+a = (df['audio'].to_numpy())
+#%%
+import sklearn
 
+#get defined values for training_x, training_y, testing_x, testing_y from pd dataframe
+x_audio_data = df['audio'].to_numpy()
+x_spect_data = np.asarray([make_spectrogram(audio_data) for audio_data in x_audio_data])
+
+y_data = np.asarray([]).to_numpy()
+y_num_data = np.asarray([])
+for symptoms in y_data:
+    if ("Dry" in symptoms):
+        y_num_data.append(1)
+    else:
+        y_num_data.append(0)
+
+#x_spect_data.reshape() --> appropriate dimension
+#y_num_data.reshape() --> appropriate dimension
+        
+#split x_spect_data and y_num_data into appropriate variables
+#maybe, as you were saying, using sklearn
+        
 os.chdir("../../..")
 trained_model = train(training_x, training_y, testing_x, testing_y)
 
