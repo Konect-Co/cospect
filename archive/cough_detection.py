@@ -50,11 +50,12 @@ def train (training_x, training_y, testing_x, testing_y):
 	return model
 
 if __name__ == '__main__':
-	(training_x, training_y), (testing_x, testing_y) = make_data()
+	#get defined values for training_x, training_y, testing_x, testing_y from pd dataframe
 
 	os.chdir("../../..")
 	trained_model = train(training_x, training_y, testing_x, testing_y)
 
+    #Saving the model
 	#TODO: Save only the model and weights, not optimizer state or any of that junk
 	"""trained_model.save("./model.h5")
 
