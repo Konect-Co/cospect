@@ -20,16 +20,11 @@ class MakeData:
                return True
        except IndexError as e:
            print('FILE EXTENSION NOT IN '+'.json')
-           
-       
        
    def make_df(self,csv_name='audio.csv'):
-       
        df=pd.DataFrame()
        json_files=os.listdir(self.json_path)
        audio_files=os.listdir(self.audio_path)
-       
-       
        
        df=pd.DataFrame(columns=['id','age','gender','symptoms','disease','audio','sampling rate','time'])
        i=0
@@ -37,14 +32,12 @@ class MakeData:
        for j in json_files:
            if(self.is_json(j)==True):
                with open(os.path.join(self.json_path,j)) as f:
-                   
                    dict1=json.load(f)
                    id1=j.split('.')[0]
                    age=dict1['age']
                    gender=dict1['gender']
                    symptoms=dict1['symptoms'][0]
                    disease=dict1['disease']
-                   
                
                    df.loc[i,'id']=id1
                    df.loc[i,'age']=age
@@ -62,11 +55,8 @@ class MakeData:
                    
                    i=i+1
 
-       return df
-           
-               
+       return df 
 #%%
-
 sep = os.path.sep
 dirs=os.getcwd().split(sep)[:-2]
 base_path = sep.join(dirs)
@@ -76,6 +66,7 @@ audio_path = base_path + "Data" + sep + "YT-Audio"
 json_path= base_path + "Data"
 h = MakeData(audio_path, json_path)
 df=h.make_df()
+
 print(df.head())
 
 #%%
@@ -83,49 +74,55 @@ from keras import Model
 from keras.layers import Input, Conv1D, RNN, SimpleRNNCell, Dense, Activation, SimpleRNN
 
 def get_model():
-	conv_filters = 100
-	conv_kernel_size = 100
-	rnn_units = 100
-	output_size = 1
-
-	input_layer = Input(shape=(None, 1025))
-	#input size is (None, None, 1025)
-	
-	#conv_output = Conv1D(conv_filters, conv_kernel_size, padding='causal')(input_layer)
-	#causal padding not implemented for tensorflow js
-	conv_output = Conv1D(conv_filters, conv_kernel_size)(input_layer)
-	#casual padding preserves time_steps dimension as the same
-	
-	#rnn_output = RNN(SimpleRNNCell(rnn_units))(conv_output)
-	rnn_output = SimpleRNN(rnn_units)(conv_output)
-	#output is (None, rnn_units)
-	
-	dense_output = Dense(output_size)(rnn_output)
-	#output is (None, 1)
-	
-	output_layer = Activation('softmax')(dense_output)
-	#output is (None, 1)
+    conv_filters = 100
+    conv_kernel_size = 100
+    rnn_units = 100
+    output_size = 1
     
-    	model = Model(inputs=input_layer, outputs=output_layer)
-	
-	return model
-    
+    input_layer = Input(shape=(None, 1025))
+    #input size is (None, None, 1025)
+    	
+    #conv_output = Conv1D(conv_filters, conv_kernel_size, padding='causal')(input_layer)
+    #causal padding not implemented for tensorflow js
+    conv_output = Conv1D(conv_filters, conv_kernel_size)(input_layer)
+    #casual padding preserves time_steps dimension as the same
+    	
+    #rnn_output = RNN(SimpleRNNCell(rnn_units))(conv_output)
+    rnn_output = SimpleRNN(rnn_units)(conv_output)
+    #output is (None, rnn_units)
+    	
+    dense_output = Dense(output_size)(rnn_output)
+    #output is (None, 1)
+    	
+    output_layer = Activation('softmax')(dense_output)
+    #output is (None, 1)
 
+    model = Model(inputs=input_layer, outputs=output_layer)
+    	
+    return model
+    
 #%%
-    
 #TODO: This method is repeated in several locations, including "GenData/DataAugmentation"
 #   Consolidate into one Python util file
 #utility function to create spectrogram input from an audio file
-def make_spectrogram(file_path):
-	signal, sample_rate = librosa.core.load(file_path)
-	if signal.shape[0] == 2:
-		signal = np.mean(signal, axis=0)
 
+def make_spectrogram(signal, sample_rate):
 	resample_freq = 8000
 	signal_resampled = librosa.core.resample(signal, sample_rate, resample_freq)
 
 	stft = librosa.core.stft(signal_resampled)
 	spectrogram = np.power(np.abs(stft), 0.5)
+	
+	spectrogram = np.swapaxes(spectrogram, 0, 1)
+    
+	return spectrogram
+
+def file2spectrogram(file_path):
+	signal, sample_rate = librosa.core.load(file_path)
+	if signal.shape[0] == 2:
+		signal = np.mean(signal, axis=0)
+
+	spectrogram = make_spectrogram(signal, sample_rate)
 	
 	return spectrogram
 #%%
@@ -143,31 +140,67 @@ def train (training_x, training_y, testing_x, testing_y):
 	model.fit(training_x, training_y, epochs=epochs, validation_data=(testing_x, testing_y))
 
 #%%
-a = (df['audio'].to_numpy())
-#%%
-import sklearn
+from sklearn.model_selection import train_test_split
 
 #get defined values for training_x, training_y, testing_x, testing_y from pd dataframe
 x_audio_data = df['audio'].to_numpy()
-x_spect_data = np.asarray([make_spectrogram(audio_data) for audio_data in x_audio_data])
+x_sampling_rate = df['sampling rate'].to_numpy()
+y_data = df['symptoms'].to_numpy()
 
-y_data = np.asarray([]).to_numpy()
-y_num_data = np.asarray([])
+x_audio_split = []
+y_data_split = []
+
+chunk_len = 10 #seconds each chunk should be
+
+#%%
+
+x_spect_data = []
+for (audio_data, sampling_rate) in zip(x_audio_data, x_sampling_rate):
+    spectrogram = make_spectrogram(audio_data, sampling_rate)
+    x_spect_data.append(spectrogram)
+
+
+y_num_data = []
 for symptoms in y_data:
     if ("Dry" in symptoms):
         y_num_data.append(1)
     else:
         y_num_data.append(0)
+y_num_data = np.asarray(y_num_data)
+#%%
+for i in range(x_audio_data.shape[0]):
+    x_audio_sample = x_audio_data[i]
+    n = x_sampling_rate[i]*chunk_len
+    x_split = [x_audio_sample[t:t + n] for t in range(0, len(x_audio_sample), n)]
+    for _ in range(n-len(x_split[-1])):
+        x_split[-1] = np.append(x_split[-1], 0)
+    for j in range(len(x_split)):
+        y_data_split.append(y_data[i])
+    x_audio_split += x_split
+#%%
+num_samples = df.shape[0]
 
-#x_spect_data.reshape() --> appropriate dimension
-#y_num_data.reshape() --> appropriate dimension
-        
-#split x_spect_data and y_num_data into appropriate variables
-#maybe, as you were saying, using sklearn
-        
-os.chdir("../../..")
+max_len = 0
+for x_sample in x_spect_data:
+    length = x_sample.shape[0]
+    if length > max_len:
+        max_len = length
+
+x_padded = np.zeros((num_samples, max_len, 1025))
+for i in range(len(x_spect_data)):
+    x_sample = x_spect_data[i]
+    x_sample_len = x_sample.shape[0]
+    x_sample_padded = np.pad(x_sample, [(0, max_len-x_sample_len), (0,0)])
+    x_padded[i] = x_sample_padded
+#%%
+print(y_data_split)
+training_x, testing_x, training_y, testing_y = train_test_split(x_spect_data, y_num_data, test_size=0.10)
+#%%
+print(len(training_x))
+
+#%%
 trained_model = train(training_x, training_y, testing_x, testing_y)
-
+#%%
 #Saving the model in Keras format
 #TODO: Save only the model and weights, not optimizer state or any of that junk
 """trained_model.save("./model.h5")
