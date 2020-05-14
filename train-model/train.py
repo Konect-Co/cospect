@@ -4,6 +4,8 @@ import numpy as np
 import pandas as pd
 import os
 import librosa
+
+from openpyxl import load_workbook
 pd.DataFrame()
 
 class MakeData:
@@ -54,19 +56,83 @@ class MakeData:
                    df.loc[i,'time']=duration
                    
                    i=i+1
-
-       return df 
+       return df
 #%%
-sep = os.path.sep
-dirs=os.getcwd().split(sep)[:-2]
-base_path = sep.join(dirs)
-base_path = "/home/ravit/Konect-Code/cospect/"
+import ast
+from pydub import AudioSegment
 
-audio_path = base_path + "Data" + sep + "YT-Audio"
-json_path= base_path + "Data"
-h = MakeData(audio_path, json_path)
-df=h.make_df()
+def make_df():
+    df=pd.DataFrame(columns=['id','age','gender','symptoms','disease','audio','sampling rate','time'])
+    
+    dirs = "/home/ravit/Konect-Code".split("/")
+    base_path = "/".join(dirs)
+    
+    sheet_path = base_path + "/cospect/GenData/data.xlsx"
+    
+    wb = load_workbook(sheet_path)
+    ws = wb.active
+    
+    start_row = 7
+    end_row = 11
 
+    for row_i in range(start_row, end_row+1):
+        name = str(row_i)
+        yt_link = ws["H" + str(row_i)].value
+        
+        file_path = base_path + "/cospect/Data/temp"
+        os.system("youtube-dl --extract-audio " + yt_link + " -o " + file_path + ".wav")
+        
+        opus_ext = os.path.exists(file_path + ".opus")
+        m4a_ext = os.path.exists(file_path + ".m4a")
+        
+        if opus_ext:
+            dl_path = file_path + ".opus"
+        elif m4a_ext:
+            dl_path = file_path + ".m4a"
+	
+        out_path = file_path + ".wav"
+
+        if opus_ext or m4a_ext:
+            cmdstr = "ffmpeg -i \"" + dl_path + "\" -f wav -flags bitexact \"" + out_path + "\""		
+            os.system(cmdstr)
+            os.remove(dl_path)
+            
+            section = ws["I" + str(row_i)].value
+            if(section != "FULL"):
+                sound = AudioSegment.from_wav(out_path)
+                
+                section = ast.literal_eval(section) #string representation to actual list
+                new_sound = AudioSegment.empty()
+                section.reverse() #to make intervals from lastest to earliest
+                for interval in section: #want to consider the intervals from largest to smallest
+                    new_sound += sound[interval[0]*1000:interval[1]*1000] #changing seconds to milliseconds
+                
+                os.remove(out_path)
+                new_sound.export(out_path)
+        
+        gender = ws["B" + str(row_i)].value
+        age = ws["C" + str(row_i)].value
+        symptoms = ws["D" + str(row_i)].value.split("_")
+        disease = ws["G" + str(row_i)].value
+            
+        df.loc[row_i,'id']=name
+        df.loc[row_i,'age']=age
+        df.loc[row_i,'gender']=gender
+        df.loc[row_i,'symptoms']=symptoms
+        df.loc[row_i,'disease']=disease
+        
+        audio,sample=librosa.core.load(path=out_path)
+                           
+        df.loc[row_i,'audio']=np.asarray(audio)
+        df.loc[row_i,'sampling rate']=sample
+                           
+        duration=librosa.get_duration(y=audio,sr=sample)
+        df.loc[row_i,'time']=duration
+        
+        return df
+    
+#%%
+df = make_df()
 print(df.head())
 
 #%%
