@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-//https://bulma.io/ for CSS
-
 //Following two are used in creating the server and GET/POST requests
 var express = require('express');
 var app = express();
@@ -14,7 +12,7 @@ app.use(express.urlencoded());
 app.use(express.json());
 
 var server = function(req, res, next) {
-	/*if (req.method == 'POST') {
+	if (req.method == 'POST') {
 		var form = new formidable.IncomingForm();
 
 		form.parse(req, function(err, fields, files) {
@@ -27,19 +25,9 @@ var server = function(req, res, next) {
 			var status = fields['status'];
 			var comments = fields['comments'];
 
-			console.log(req.body);
-			console.log(name);
-			console.log(sex);
-			console.log(age);
-			console.log(status);
-			console.log(comments);
-
-			console.log(req.body.status);
-
 			var id = uuid.v4();
 			var base_path = "/home/ravit/Konect-Code/cospect/webapp/";
 
-			//TODO: mkdir id
 			fs.mkdirSync("audio_files/" + id, {recursive: true});
 
 			var audioPath = "./audio_files/" + id + "/" + id + ".wav";
@@ -57,9 +45,11 @@ var server = function(req, res, next) {
 
 			var jsonPath = base_path + "audio_files/" + id + "/info.json";
 			fs.writeFileSync(jsonPath, JSON.stringify(json_obj));
+
+			//TODO: Save data into MySQL Database
 		});
 		res.end();
-	}*/
+	}
 	if (req.method == "GET") {
 		console.log("GET " + req.url);
 		if (req.url == "/" || req.url == "") {
@@ -82,8 +72,6 @@ var server = function(req, res, next) {
 		}
 	}
 }
-
-
 
 app.use(server);
 
