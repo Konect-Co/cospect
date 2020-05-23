@@ -119,7 +119,10 @@ function createDownloadLink(blob) {
 	//upload link
 	var upload = document.createElement('a');
 	upload.href="#";
-	upload.innerHTML = `<button class="btn-light" id="record-btn" onclick="window.location.href = 'audio.html'">Upload</button>`;
+	upload.innerHTML = `
+	<button class="btn-light" id="record-btn" onclick="window.location.href = 'audio.html'">Upload</button>
+	<button class="btn-dark" id="record-btn" onclick="window.location.href = 'index.html'">Return Home</button>
+	`;
 	upload.addEventListener("click", function(event){
 		 
 	})
