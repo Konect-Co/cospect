@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width">
+		<meta name="description" content="Affordable and professional web design">
+		  <meta name="keywords" content="web design, affordable web design, professional web design">
+		<meta name="author" content="Mayank Kumar">
+		<title>CoSpect Web App</title>
+		<link rel="stylesheet" href="style.css">
+	</head>
+	<body>
+
+		<header>
+			<div class="container">
+				<div id="branding">
+					<h1><span class="highlight">Cough</span> Symptom Analysis</h1>
+			 	</div>
+				<nav id="navbar">
+					<ul>
+					 <li class="current"><a href="index.html">Home</a></li>
+					 <li class="current"><a>Contact</a></li>
+					</ul>
+				 </nav>
+			</div>
+		</header>
+
+		<section id="showcase">
+			<div class="showcase-content">
+				<h1 class="lead">Analyze your cough symptoms...</h1>
+				<div class="lead2">
+				<button class="btn-light" id="record-btn" onclick="window.location.href = 'audio.html'">RECORD FROM MIC</button>
+				<b>OR</b>
+				<button class="btn-dark" id="upload-btn" onclick="document.getElementById('file-input').click();">UPLOAD FROM A FILE</button>
+			</div>
+
+			<div id="data">
+				<div class="data-record">
+					<h1 class="Model">
+				Help Us Improve Our Model By Sharing some Optional info:
+					</h1>
+				</div>
+				<div class="data-record2">
+					<form action="submit" enctype="multipart/form-data" method="post" id="coughForm">
+						<div class="agw">
+							<label for="age">Age</label>
+							<input type="number" name="age" id="age" placeholder="21" min="1" max="130">
+
+							<label for="sex">sex</lable>
+							<select id="sex" name="sex">
+								<option value="null" style="display:none" disabled selected></option>
+								<option value="m">Male</option>
+								<option value="f">Female</option>
+							</select>
+						  
+							<label for="covid">COVID-19 Positive</label>
+							<select id="status" name="covid">
+								<option value="null" style="display:none" disabled selected></option>
+								<option value="untested">Not Tested</option>
+								<option value="pos">Tested - Positive</option>
+								<option value="neg">Tested - Negative</option>
+							</select>
+
+							<input class="btn-dark" type="file" id="file-input" name="upload" onchange="onUpload()" accept="audio/*" style="display: none;">
+						</div>
+						
+				 	</form>
+				</div>	   
+			</div>
+				<div id="showcase-box">
+					<h1>
+					 <button class="btn-data" onclick = "window.location.href = 'doc.html'" >How Do We Use your Data</button>
+					</h1>
+					<button class="btn-main" onclick = "document.getElementById('coughForm').submit()" >SUBMIT</button>
+				</div>
+			</div>
+			<footer>
+				<ul>Covid-19 cough sound detection</ul><ul> Copyright &copy; 2020</ul>
+			</footer>
+		</section>
+	</body>
+</html>
+
+<script>
+//This method prevents the user from re-clicking upload or record button once either is clicked
+function onUpload() {
+	document.getElementById("record-btn").disabled = true;
+	document.getElementById("upload-btn").disabled = true;
+}
+</script>
